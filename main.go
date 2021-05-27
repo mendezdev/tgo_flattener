@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"github.com/mendezdev/tgo_flattener/app"
+)
 
 func main() {
-	fmt.Printf("starting program...\n")
+	app.StartApplication()
 }
