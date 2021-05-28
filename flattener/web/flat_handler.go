@@ -7,21 +7,21 @@ import (
 	flatGtw "github.com/mendezdev/tgo_flattener/flattener/gateway"
 )
 
-type FlatHandler interface {
-	Flat(c *gin.Context)
+type Handler interface {
+	Post(c *gin.Context)
 }
 
-type flatHandlerImpl struct {
-	gtw flatGtw.FlatService
+type handler struct {
+	gtw flatGtw.Gateway
 }
 
-func NewFlatHandler() FlatHandler {
-	return &flatHandlerImpl{
-		gtw: flatGtw.NewFlatService(),
+func NewHandler() Handler {
+	return &handler{
+		gtw: flatGtw.NewGateway(),
 	}
 }
 
-func (h *flatHandlerImpl) Flat(c *gin.Context) {
+func (h *handler) Post(c *gin.Context) {
 	var unflatted []interface{}
 	if err := c.ShouldBindJSON(&unflatted); err != nil {
 		c.JSON(http.StatusBadRequest, "error parsing body")

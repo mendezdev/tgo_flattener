@@ -4,17 +4,17 @@ import (
 	models "github.com/mendezdev/tgo_flattener/flattener/models"
 )
 
-type FlatService interface {
+type Gateway interface {
 	FlatResponse([]interface{}) models.FlatResponse
 }
 
-type flatServiceImpl struct{}
+type gateway struct{}
 
-func NewFlatService() FlatService {
-	return &flatServiceImpl{}
+func NewGateway() Gateway {
+	return &gateway{}
 }
 
-func (s *flatServiceImpl) FlatResponse(req []interface{}) models.FlatResponse {
+func (s *gateway) FlatResponse(req []interface{}) models.FlatResponse {
 	parsedFlat := flatRecursive(req, 0)
 
 	fr := models.FlatResponse{
