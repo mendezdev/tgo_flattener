@@ -10,7 +10,7 @@ func routes() *gin.Engine {
 	router := gin.Default()
 
 	flatService := flattener.NewFlatService()
-	router.GET("/flat", flatService.FlatHandler)
+	router.POST("/flat", flatService.FlatHandler)
 
 	return router
 }
