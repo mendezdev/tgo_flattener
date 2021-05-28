@@ -14,9 +14,9 @@ type handler struct {
 	gtw Gateway
 }
 
-func NewHandler() Handler {
+func NewHandler(flatGateway Gateway) Handler {
 	return &handler{
-		gtw: NewGateway(),
+		gtw: flatGateway,
 	}
 }
 
