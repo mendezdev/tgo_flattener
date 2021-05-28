@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mendezdev/tgo_flattener/apierrors"
 )
 
 type Handler interface {
@@ -23,7 +24,8 @@ func NewHandler(flatGateway Gateway) Handler {
 func (h *handler) Post(c *gin.Context) {
 	var unflatted []interface{}
 	if err := c.ShouldBindJSON(&unflatted); err != nil {
-		c.JSON(http.StatusBadRequest, "error parsing body")
+		apiErr := apierrors.NewBadRequestError("error parsing body")
+		c.JSON(http.StatusBadRequest, apiErr)
 		return
 	}
 

@@ -30,11 +30,17 @@ func TestFlat_ValidRequest(t *testing.T) {
 		FlatResponse(gomock.Any()).Return(mockedResponse).
 		Times(1)
 
-	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	nr := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(nr)
 	c.Request, _ = http.NewRequest("POST", "/flat", strings.NewReader(string(jsonMockedResponse)))
 	h.Post(c)
 
+	var fr FlatResponse
+	jsonErr := json.Unmarshal(nr.Body.Bytes(), &fr)
+	assert.Nil(t, jsonErr)
+
 	assert.Equal(t, http.StatusOK, c.Writer.Status())
+	assert.Equal(t, mockedResponse, fr)
 }
 
 func TestFlat_BadRequest(t *testing.T) {
@@ -56,20 +62,22 @@ func TestFlat_BadRequest(t *testing.T) {
 		FlatResponse(gomock.Any()).
 		Times(0)
 
-	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	nr := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(nr)
 	c.Request, _ = http.NewRequest("POST", "/flat", strings.NewReader(string(jsonMockedRequest)))
 	h.Post(c)
 
 	assert.Equal(t, http.StatusBadRequest, c.Writer.Status())
+	assert.Contains(t, nr.Body.String(), "error parsing body")
 }
 
 func mockFlatRequest() []interface{} {
-	return []interface{}{1, 2, 3, 4}
+	return []interface{}{"test1", "test2", "test3"}
 }
 
 func mockFlatResponse() FlatResponse {
 	return FlatResponse{
 		MaxDepth: 0,
-		Data:     []interface{}{1, 2, 3, 4},
+		Data:     []interface{}{"test1", "test2", "test3"},
 	}
 }
