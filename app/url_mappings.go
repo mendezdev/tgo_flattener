@@ -3,7 +3,7 @@ package app
 import (
 	"github.com/gin-gonic/gin"
 
-	flattener "github.com/mendezdev/tgo_flattener/flattener/web"
+	"github.com/mendezdev/tgo_flattener/flattener"
 	"github.com/mendezdev/tgo_flattener/ping"
 )
 

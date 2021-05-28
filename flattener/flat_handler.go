@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	flatGtw "github.com/mendezdev/tgo_flattener/flattener/gateway"
 )
 
 type Handler interface {
@@ -12,12 +11,12 @@ type Handler interface {
 }
 
 type handler struct {
-	gtw flatGtw.Gateway
+	gtw Gateway
 }
 
 func NewHandler() Handler {
 	return &handler{
-		gtw: flatGtw.NewGateway(),
+		gtw: NewGateway(),
 	}
 }
 

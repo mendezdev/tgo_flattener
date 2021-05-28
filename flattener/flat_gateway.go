@@ -1,11 +1,9 @@
 package flattener
 
-import (
-	models "github.com/mendezdev/tgo_flattener/flattener/models"
-)
+//go:generate mockgen -destination=mock_gateway.go -package=flattener -source=flat_gateway.go Gateway
 
 type Gateway interface {
-	FlatResponse([]interface{}) models.FlatResponse
+	FlatResponse([]interface{}) FlatResponse
 }
 
 type gateway struct{}
@@ -14,10 +12,10 @@ func NewGateway() Gateway {
 	return &gateway{}
 }
 
-func (s *gateway) FlatResponse(req []interface{}) models.FlatResponse {
+func (s *gateway) FlatResponse(req []interface{}) FlatResponse {
 	parsedFlat := flatRecursive(req, 0)
 
-	fr := models.FlatResponse{
+	fr := FlatResponse{
 		Data: make([]interface{}, 0),
 	}
 
