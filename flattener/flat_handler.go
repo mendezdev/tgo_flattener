@@ -9,6 +9,7 @@ import (
 
 type Handler interface {
 	Post(c *gin.Context)
+	GetAll(c *gin.Context)
 }
 
 type handler struct {
@@ -31,4 +32,14 @@ func (h *handler) Post(c *gin.Context) {
 
 	flatResponse := h.gtw.FlatResponse(unflatted)
 	c.JSON(http.StatusOK, flatResponse)
+}
+
+func (h *handler) GetAll(c *gin.Context) {
+	flats, err := h.gtw.GetFlats()
+	if err != nil {
+		c.JSON(err.Status(), err)
+		return
+	}
+
+	c.JSON(http.StatusOK, flats)
 }
