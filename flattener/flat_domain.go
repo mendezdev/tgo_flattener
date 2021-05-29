@@ -3,6 +3,9 @@ package flattener
 import (
 	"errors"
 	"fmt"
+	"strconv"
+
+	"github.com/mendezdev/tgo_flattener/apierrors"
 )
 
 type FlatResponse struct {
@@ -18,20 +21,11 @@ type FlatInfoResponse struct {
 }
 
 type FlatInfo struct {
-	ID               string              `json:"id" bson:"_id,omitempty"`
-	StructureInfo    []FlatStructureInfo `bson:"structure"`
-	StructureFlatted []FlatData          `bson:"structure_flatted"`
-	DateCreated      string              `bson:"date_created"`
-}
-
-type FlatStructureInfo struct {
-	Level int        `bson:"level"`
-	Data  []FlatData `bson:"data"`
-}
-
-type FlatData struct {
-	DataType  string `bson:"type"`
-	DataValue string `bson:"value"`
+	ID            string        `json:"id" bson:"_id,omitempty"`
+	Graph         *Graph        `bson:"-"`
+	GraphSecuence GraphSecuence `bson:"graph_secuence"`
+	MaxDepth      int           `bson:"max_depth"`
+	DateCreated   string        `bson:"date_created"`
 }
 
 // Graph
@@ -178,45 +172,63 @@ func (g *Graph) AddEdge(k1, k2 int) {
 }
 
 // FUNCTIONS
-func BuildGraphFromArray(input []interface{}) *Graph {
+func FlatArray(input []interface{}) (FlatInfo, apierrors.RestErr) {
 	gs := NewGraphSecuence()
 	g := NewDirectedGraph()
 
 	var node int
+	var maxDepth int
 	g.AddVertex(node, nil)
 
-	cb := func(father int, val interface{}) int {
-		node++
+	cb := func(father int, depth int, val interface{}) int {
+		if depth > maxDepth {
+			maxDepth = depth
+		}
+
 		var data interface{}
 
 		if _, ok := val.([]interface{}); !ok {
 			data = val
 		}
-		g.AddVertex(node, data)
-		dt, dv, err := getTypeAndValueStringFromInterface(data)
-
-		// TODO: return apierrors
-		if err != nil {
-			panic(err)
+		var dt, dv string
+		var parseErr error
+		if data != nil {
+			dt, dv, parseErr = getTypeAndValueStringFromInterface(data)
+			// TODO: return apierrors
+			if parseErr != nil {
+				panic(parseErr)
+			}
 		}
+
 		gs.VertexSecuence = append(gs.VertexSecuence,
 			VertexSecuence{node, DataInfo{DataType: dt, DataValue: dv}})
-		g.AddEdge(father, node)
 		gs.EdgeSecuence = append(gs.EdgeSecuence, EdgeSecuence{father, node})
+
+		node++
+		g.AddVertex(node, data)
+		g.AddEdge(father, node)
 		return node
 	}
 
 	// start from zero node by default
-	buildGraphRecursive(input, 0, cb)
-	return g
+	buildGraphRecursive(input, 0, 0, cb)
+	return FlatInfo{
+		Graph:         g,
+		GraphSecuence: gs,
+		MaxDepth:      maxDepth,
+	}, nil
 }
 
-func buildGraphRecursive(data []interface{}, father int, cb func(int, interface{}) int) {
+func buildGraphRecursive(data []interface{}, father int, depth int, cb func(int, int, interface{}) int) {
 	for _, v := range data {
-		current := cb(father, v)
+		var d int
 		parsed, ok := v.([]interface{})
 		if ok {
-			buildGraphRecursive(parsed, current, cb)
+			d = depth + 1
+		}
+		current := cb(father, d, v)
+		if ok {
+			buildGraphRecursive(parsed, current, d, cb)
 		}
 	}
 }
@@ -230,4 +242,42 @@ func getTypeAndValueStringFromInterface(val interface{}) (string, string, error)
 	dv = fmt.Sprintf("%v", val)
 
 	return dt, dv, nil
+}
+
+func BuildGraphFromSecuence(gs GraphSecuence) (*Graph, apierrors.RestErr) {
+	g := NewDirectedGraph()
+
+	// creating all the vertex's
+	for _, vtx := range gs.VertexSecuence {
+		parsedValue, err := vtx.DataInfo.toInterface()
+		if err != nil {
+			return nil, apierrors.NewInternalServerError("error parsing data_info")
+		}
+		g.AddVertex(vtx.Key, parsedValue)
+	}
+
+	// creating all the edge connections
+	for _, e := range gs.EdgeSecuence {
+		g.AddEdge(e.From, e.To)
+	}
+
+	return g, nil
+}
+
+func (di DataInfo) toInterface() (interface{}, error) {
+	var convertedValue interface{}
+	var err error
+
+	switch di.DataType {
+	case "float64":
+		convertedValue, err = strconv.ParseFloat(di.DataValue, 64)
+	case "bool":
+		convertedValue, err = strconv.ParseBool(di.DataValue)
+	default:
+		convertedValue = di.DataValue
+	}
+	if err != nil {
+		return nil, fmt.Errorf("error parsing flat_data: %s", err.Error())
+	}
+	return convertedValue, nil
 }

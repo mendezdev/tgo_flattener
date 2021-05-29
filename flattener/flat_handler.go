@@ -30,7 +30,11 @@ func (h *handler) Post(c *gin.Context) {
 		return
 	}
 
-	flatResponse := h.gtw.FlatResponse(unflatted)
+	flatResponse, err := h.gtw.FlatResponse(unflatted)
+	if err != nil {
+		c.JSON(err.Status(), err)
+		return
+	}
 	c.JSON(http.StatusOK, flatResponse)
 }
 
