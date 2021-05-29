@@ -5,11 +5,11 @@ type FlatResponse struct {
 	Data     []interface{} `json:"flatted_data"`
 }
 
-type Flat struct {
-	ID          string        `json:"id" bson:"_id,omitempty"`
-	DateCreated string        `json:"date_created" bson:"date_creted"`
-	Unflatted   []interface{} `json:"unflatted" bson:"unflatted"`
-	Flatted     []interface{} `json:"flatted" bson:"flatted"`
+type FlatInfoResponse struct {
+	ID          string        `json:"id"`
+	DateCreated string        `json:"date_created"`
+	Unflatted   []interface{} `json:"unflatted"`
+	Flatted     []interface{} `json:"flatted"`
 }
 
 type FlatInfo struct {

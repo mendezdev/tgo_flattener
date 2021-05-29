@@ -2,6 +2,8 @@ package flattener
 
 import (
 	"fmt"
+	"sort"
+	"strconv"
 
 	"github.com/mendezdev/tgo_flattener/apierrors"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -11,7 +13,7 @@ import (
 
 type Gateway interface {
 	FlatResponse([]interface{}) FlatResponse
-	GetFlats() ([]FlatInfo, apierrors.RestErr)
+	GetFlats() ([]FlatInfoResponse, apierrors.RestErr)
 }
 
 type gateway struct {
@@ -70,12 +72,20 @@ func (s *gateway) FlatResponse(req []interface{}) FlatResponse {
 	return fr
 }
 
-func (s *gateway) GetFlats() ([]FlatInfo, apierrors.RestErr) {
+func (s *gateway) GetFlats() ([]FlatInfoResponse, apierrors.RestErr) {
+	response := make([]FlatInfoResponse, 0)
 	flats, err := s.Storage.getAll()
 	if err != nil {
 		return nil, err
 	}
-	return flats, nil
+	for _, f := range flats {
+		f, fErr := f.toFlatInfoResponse()
+		if fErr != nil {
+			return nil, fErr
+		}
+		response = append(response, f)
+	}
+	return response, nil
 }
 
 func flatRecursive(arr []interface{}, depth int) map[int][]interface{} {
@@ -118,4 +128,46 @@ func toFlatInfo(data map[int][]interface{}) (FlatInfo, apierrors.RestErr) {
 	return FlatInfo{
 		StructureInfo: structures,
 	}, nil
+}
+
+func (fi FlatInfo) toFlatInfoResponse() (FlatInfoResponse, apierrors.RestErr) {
+	response := FlatInfoResponse{
+		ID:          fi.ID,
+		DateCreated: fi.DateCreated,
+		Unflatted:   make([]interface{}, 0),
+		Flatted:     make([]interface{}, 0),
+	}
+
+	for _, sf := range fi.StructureFlatted {
+		convertedValue, err := sf.toInterface()
+		if err != nil {
+			return response, apierrors.NewInternalServerError(err.Error())
+		}
+		response.Flatted = append(response.Flatted, convertedValue)
+	}
+
+	// sorting to start the creation of the original data
+	sort.Slice(fi.StructureInfo, func(i, j int) bool {
+		return fi.StructureInfo[i].Level < fi.StructureInfo[j].Level
+	})
+
+	return response, nil
+}
+
+func (fd FlatData) toInterface() (interface{}, error) {
+	var convertedValue interface{}
+	var err error
+
+	switch fd.DataType {
+	case "float64":
+		convertedValue, err = strconv.ParseFloat(fd.DataValue, 64)
+	case "bool":
+		convertedValue, err = strconv.ParseBool(fd.DataValue)
+	default:
+		convertedValue = fd.DataValue
+	}
+	if err != nil {
+		return nil, fmt.Errorf("error parsing flat_data: %s", err.Error())
+	}
+	return convertedValue, nil
 }
