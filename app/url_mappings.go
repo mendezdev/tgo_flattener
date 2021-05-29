@@ -3,17 +3,14 @@ package app
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/mendezdev/tgo_flattener/flattener"
 	"github.com/mendezdev/tgo_flattener/ping"
 )
 
-func routes() *gin.Engine {
+func routes(h handlers) *gin.Engine {
 	router := gin.Default()
 
 	router.GET("/ping", ping.Ping)
-
-	flatHandler := flattener.NewHandler(flattener.NewGateway())
-	router.POST("/flat", flatHandler.Post)
+	router.POST("/flat", h.Flat.Post)
 
 	return router
 }

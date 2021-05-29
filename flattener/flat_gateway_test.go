@@ -8,7 +8,7 @@ import (
 )
 
 func TestFlat_MixedLevels_OK(t *testing.T) {
-	gwt := NewGateway()
+	gwt := NewGateway(nil)
 
 	testCases := []struct {
 		Name      string

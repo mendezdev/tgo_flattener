@@ -1,15 +1,21 @@
 package flattener
 
+import "go.mongodb.org/mongo-driver/mongo"
+
 //go:generate mockgen -destination=mock_gateway.go -package=flattener -source=flat_gateway.go Gateway
 
 type Gateway interface {
 	FlatResponse([]interface{}) FlatResponse
 }
 
-type gateway struct{}
+type gateway struct {
+	db *mongo.Client
+}
 
-func NewGateway() Gateway {
-	return &gateway{}
+func NewGateway(db *mongo.Client) Gateway {
+	return &gateway{
+		db,
+	}
 }
 
 func (s *gateway) FlatResponse(req []interface{}) FlatResponse {
