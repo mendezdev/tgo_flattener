@@ -53,7 +53,7 @@ func (s *storage) getAll() ([]FlatInfo, apierrors.RestErr) {
 	collection := s.db.Database(DbName).Collection(FlatCollection)
 	ctx := context.TODO()
 	findOptions := options.Find()
-	findOptions.SetSort(bson.D{{"date_created", -1}}).SetLimit(config.FLATS_LIMIT)
+	findOptions.SetSort(bson.D{{"date_created", -1}}).SetLimit(config.FlatsLimit)
 	cursor, err := collection.Find(ctx, bson.D{}, findOptions)
 	if err != nil {
 		fmt.Printf("ERROR :%s\n", err.Error())
