@@ -11,6 +11,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+//go:generate mockgen -destination=mock_storage.go -package=flattener -source=flat_storage.go Storage
+
 const (
 	DbName         = "flattenerdb"
 	FlatCollection = "flats"

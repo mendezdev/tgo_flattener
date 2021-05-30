@@ -14,7 +14,7 @@ type handlers struct {
 func StartApplication() {
 	db := storage.Connect("mongodb://localhost:27017")
 	h := handlers{
-		Flat: flattener.NewHandler(flattener.NewGateway(db)),
+		Flat: flattener.NewHandler(flattener.NewGateway(flattener.NewStorage(db))),
 	}
 	if db != nil {
 		fmt.Println("testing db not nil")

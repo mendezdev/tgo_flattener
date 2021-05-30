@@ -27,7 +27,7 @@ func TestFlat_ValidRequest(t *testing.T) {
 
 	mockGtw.
 		EXPECT().
-		FlatResponse(gomock.Any()).Return(mockedResponse).
+		FlatResponse(gomock.Any()).Return(mockedResponse, nil).
 		Times(1)
 
 	nr := httptest.NewRecorder()

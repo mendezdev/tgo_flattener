@@ -164,18 +164,18 @@ func (g *Graph) AddVertex(key int, val interface{}) {
 }
 
 // AddEdge connect to Vertex
-func (g *Graph) AddEdge(k1, k2 int) {
+func (g *Graph) AddEdge(k1, k2 int) error {
 	v1 := g.Vertices[k1]
 	v2 := g.Vertices[k2]
 
 	// TODO: return apierrors ?
 	if v1 == nil || v2 == nil {
-		panic("not all vertices exists")
+		return errors.New("not all vertices exists")
 	}
 
 	// is already connected
 	if _, ok := v1.Vertices[v2.Key]; ok {
-		return
+		return nil
 	}
 
 	// check if is undirected
@@ -187,6 +187,7 @@ func (g *Graph) AddEdge(k1, k2 int) {
 	// add the vertices to the graph vertex map
 	g.Vertices[v1.Key] = v1
 	g.Vertices[v2.Key] = v2
+	return nil
 }
 
 // FUNCTIONS
@@ -197,7 +198,7 @@ func FlatArray(input []interface{}) (FlatInfo, apierrors.RestErr) {
 	var maxDepth int
 	g.AddVertex(node, nil)
 
-	cb := func(father int, depth int, val interface{}) int {
+	cb := func(father int, depth int, val interface{}) (int, error) {
 		if depth > maxDepth {
 			maxDepth = depth
 		}
@@ -209,12 +210,18 @@ func FlatArray(input []interface{}) (FlatInfo, apierrors.RestErr) {
 
 		node++
 		g.AddVertex(node, data)
-		g.AddEdge(father, node)
-		return node
+		if err := g.AddEdge(father, node); err != nil {
+			return 0, err
+		}
+
+		return node, nil
 	}
 
 	// start from zero node by default
-	buildGraphRecursive(input, 0, 0, cb)
+	if err := buildGraphRecursive(input, 0, 0, cb); err != nil {
+		return FlatInfo{}, apierrors.NewInternalServerError(err.Error())
+	}
+
 	return FlatInfo{
 		Graph:          g,
 		VertexSecuence: g.GetVertexSecuence(),
@@ -222,18 +229,24 @@ func FlatArray(input []interface{}) (FlatInfo, apierrors.RestErr) {
 	}, nil
 }
 
-func buildGraphRecursive(data []interface{}, father int, depth int, cb func(int, int, interface{}) int) {
+func buildGraphRecursive(data []interface{}, father int, depth int, cb func(int, int, interface{}) (int, error)) error {
 	for _, v := range data {
 		var d int
 		parsed, ok := v.([]interface{})
 		if ok {
 			d = depth + 1
 		}
-		current := cb(father, d, v)
+		current, err := cb(father, d, v)
+		if err != nil {
+			return err
+		}
 		if ok {
-			buildGraphRecursive(parsed, current, d, cb)
+			if err := buildGraphRecursive(parsed, current, d, cb); err != nil {
+				return err
+			}
 		}
 	}
+	return nil
 }
 
 func getTypeAndValueStringFromInterface(val interface{}) (dt string, dv string, err error) {
@@ -261,7 +274,9 @@ func BuildGraphFromVertexSecuence(vertexSecuence []VertexSecuence) (*Graph, apie
 	// creating all the edge connections
 	for _, vs := range vertexSecuence {
 		for _, e := range vs.Edges {
-			g.AddEdge(vs.Key, e)
+			if err := g.AddEdge(vs.Key, e); err != nil {
+				return g, apierrors.NewInternalServerError(err.Error())
+			}
 		}
 	}
 

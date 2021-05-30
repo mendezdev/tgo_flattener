@@ -2,7 +2,6 @@ package flattener
 
 import (
 	"github.com/mendezdev/tgo_flattener/apierrors"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 //go:generate mockgen -destination=mock_gateway.go -package=flattener -source=flat_gateway.go Gateway
@@ -16,8 +15,8 @@ type gateway struct {
 	storage Storage
 }
 
-func NewGateway(db *mongo.Client) Gateway {
-	return &gateway{NewStorage(db)}
+func NewGateway(s Storage) Gateway {
+	return &gateway{storage: s}
 }
 
 func (s *gateway) FlatResponse(input []interface{}) (FlatResponse, apierrors.RestErr) {
@@ -39,12 +38,12 @@ func (s *gateway) FlatResponse(input []interface{}) (FlatResponse, apierrors.Res
 }
 
 func (s *gateway) GetFlats() ([]FlatInfoResponse, apierrors.RestErr) {
-	res := make([]FlatInfoResponse, 0)
 	flats, err := s.storage.getAll()
 	if err != nil {
-		return res, apierrors.NewInternalServerError("error getting flat_info from db")
+		return nil, apierrors.NewInternalServerError("error getting flat_info from db")
 	}
 
+	res := make([]FlatInfoResponse, 0)
 	for _, f := range flats {
 		g, buildErr := BuildGraphFromVertexSecuence(f.VertexSecuence)
 		if buildErr != nil {
