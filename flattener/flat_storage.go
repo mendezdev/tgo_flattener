@@ -6,9 +6,11 @@ import (
 	"time"
 
 	"github.com/mendezdev/tgo_flattener/apierrors"
+	"github.com/mendezdev/tgo_flattener/config"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 //go:generate mockgen -destination=mock_storage.go -package=flattener -source=flat_storage.go Storage
@@ -34,7 +36,7 @@ func NewStorage(db *mongo.Client) Storage {
 }
 
 func (s *storage) create(fi FlatInfo) apierrors.RestErr {
-	fi.DateCreated = time.Now().UTC().String()
+	fi.DateCreated = time.Now().UTC()
 
 	collection := s.db.Database(DbName).Collection(FlatCollection)
 	insertResult, err := collection.InsertOne(context.TODO(), fi)
@@ -50,8 +52,11 @@ func (s *storage) create(fi FlatInfo) apierrors.RestErr {
 func (s *storage) getAll() ([]FlatInfo, apierrors.RestErr) {
 	collection := s.db.Database(DbName).Collection(FlatCollection)
 	ctx := context.TODO()
-	cursor, err := collection.Find(ctx, bson.D{})
+	findOptions := options.Find()
+	findOptions.SetSort(bson.D{{"date_created", -1}}).SetLimit(config.FLATS_LIMIT)
+	cursor, err := collection.Find(ctx, bson.D{}, findOptions)
 	if err != nil {
+		fmt.Printf("ERROR :%s\n", err.Error())
 		return nil, apierrors.NewInternalServerError(fmt.Sprintf("database error getting all flat_info: %s", err.Error()))
 	}
 	var res []FlatInfo

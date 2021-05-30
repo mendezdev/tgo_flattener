@@ -139,7 +139,7 @@ func getMockFlatInfo() []FlatInfo {
 			ID:             "qwery12345",
 			MaxDepth:       0,
 			VertexSecuence: vs,
-			DateCreated:    time.Now().UTC().String(),
+			DateCreated:    time.Now().UTC(),
 		},
 	}
 	return fi

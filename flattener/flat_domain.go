@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/mendezdev/tgo_flattener/apierrors"
 )
@@ -15,7 +16,7 @@ type FlatResponse struct {
 
 type FlatInfoResponse struct {
 	ID          string        `json:"id"`
-	DateCreated string        `json:"date_created"`
+	DateCreated time.Time     `json:"date_created"`
 	Unflatted   []interface{} `json:"unflatted"`
 	Flatted     []interface{} `json:"flatted"`
 }
@@ -25,7 +26,7 @@ type FlatInfo struct {
 	Graph          *Graph           `bson:"-"`
 	VertexSecuence []VertexSecuence `bson:"vertex_secuence"`
 	MaxDepth       int              `bson:"max_depth"`
-	DateCreated    string           `bson:"date_created"`
+	DateCreated    time.Time        `bson:"date_created"`
 }
 
 // Graph
