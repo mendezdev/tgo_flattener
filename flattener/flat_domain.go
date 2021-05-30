@@ -275,7 +275,7 @@ func BuildGraphFromVertexSecuence(vertexSecuence []VertexSecuence) (*Graph, apie
 	for _, vs := range vertexSecuence {
 		for _, e := range vs.Edges {
 			if err := g.AddEdge(vs.Key, e); err != nil {
-				return g, apierrors.NewInternalServerError(err.Error())
+				return nil, apierrors.NewInternalServerError(err.Error())
 			}
 		}
 	}
