@@ -31,7 +31,8 @@ func TestFlat_MixedLevels_OK(t *testing.T) {
 			assert.Nil(t, err)
 			assert.NotNil(t, useCase)
 
-			fr := gwt.FlatResponse(useCase)
+			fr, apiErr := gwt.FlatResponse(useCase)
+			assert.Nil(t, apiErr)
 
 			assert.NotNil(t, fr)
 			assert.Equal(t, tc.MaxDepth, fr.MaxDepth)

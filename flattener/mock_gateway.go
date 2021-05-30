@@ -8,6 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	apierrors "github.com/mendezdev/tgo_flattener/apierrors"
 )
 
 // MockGateway is a mock of Gateway interface.
@@ -34,15 +35,31 @@ func (m *MockGateway) EXPECT() *MockGatewayMockRecorder {
 }
 
 // FlatResponse mocks base method.
-func (m *MockGateway) FlatResponse(arg0 []interface{}) FlatResponse {
+func (m *MockGateway) FlatResponse(arg0 []interface{}) (FlatResponse, apierrors.RestErr) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlatResponse", arg0)
 	ret0, _ := ret[0].(FlatResponse)
-	return ret0
+	ret1, _ := ret[1].(apierrors.RestErr)
+	return ret0, ret1
 }
 
 // FlatResponse indicates an expected call of FlatResponse.
 func (mr *MockGatewayMockRecorder) FlatResponse(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlatResponse", reflect.TypeOf((*MockGateway)(nil).FlatResponse), arg0)
+}
+
+// GetFlats mocks base method.
+func (m *MockGateway) GetFlats() ([]FlatInfoResponse, apierrors.RestErr) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFlats")
+	ret0, _ := ret[0].([]FlatInfoResponse)
+	ret1, _ := ret[1].(apierrors.RestErr)
+	return ret0, ret1
+}
+
+// GetFlats indicates an expected call of GetFlats.
+func (mr *MockGatewayMockRecorder) GetFlats() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFlats", reflect.TypeOf((*MockGateway)(nil).GetFlats))
 }
