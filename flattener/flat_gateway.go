@@ -1,8 +1,6 @@
 package flattener
 
 import (
-	"fmt"
-
 	"github.com/mendezdev/tgo_flattener/apierrors"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -48,19 +46,17 @@ func (s *gateway) GetFlats() ([]FlatInfoResponse, apierrors.RestErr) {
 	}
 
 	for _, f := range flats {
-		g, buildErr := BuildGraphFromSecuence(f.GraphSecuence)
+		g, buildErr := BuildGraphFromVertexSecuence(f.VertexSecuence)
 		if buildErr != nil {
-			return res, buildErr
+			return nil, buildErr
 		}
-
-		fmt.Println("PASS HERE")
-		//unflatted := f.Graph.ToArray()
+		unflatted := g.ToArray()
 		flatted := g.ToFlat()
 		fir := FlatInfoResponse{
 			ID:          f.ID,
 			DateCreated: f.DateCreated,
-			Unflatted:   flatted,
-			Flatted:     nil,
+			Unflatted:   unflatted,
+			Flatted:     flatted,
 		}
 		res = append(res, fir)
 	}

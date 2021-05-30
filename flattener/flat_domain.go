@@ -21,11 +21,11 @@ type FlatInfoResponse struct {
 }
 
 type FlatInfo struct {
-	ID            string        `json:"id" bson:"_id,omitempty"`
-	Graph         *Graph        `bson:"-"`
-	GraphSecuence GraphSecuence `bson:"graph_secuence"`
-	MaxDepth      int           `bson:"max_depth"`
-	DateCreated   string        `bson:"date_created"`
+	ID             string           `json:"id" bson:"_id,omitempty"`
+	Graph          *Graph           `bson:"-"`
+	VertexSecuence []VertexSecuence `bson:"vertex_secuence"`
+	MaxDepth       int              `bson:"max_depth"`
+	DateCreated    string           `bson:"date_created"`
 }
 
 // Graph
@@ -40,14 +40,10 @@ type Vertex struct {
 	Vertices map[int]*Vertex
 }
 
-type GraphSecuence struct {
-	VertexSecuence []VertexSecuence `bson:"vertex_secuence"`
-	EdgeSecuence   []EdgeSecuence   `bson:"edge_secuence"`
-}
-
 type VertexSecuence struct {
 	Key      int      `bson:"key"`
 	DataInfo DataInfo `bson:"data"`
+	Edges    []int    `json:"edges"`
 }
 
 type EdgeSecuence struct {
@@ -73,13 +69,6 @@ func NewDirectedGraph() *Graph {
 	return &Graph{
 		Vertices: map[int]*Vertex{},
 		directed: true,
-	}
-}
-
-func NewGraphSecuence() GraphSecuence {
-	return GraphSecuence{
-		VertexSecuence: make([]VertexSecuence, 0),
-		EdgeSecuence:   make([]EdgeSecuence, 0),
 	}
 }
 
@@ -139,6 +128,35 @@ func (v *Vertex) ToFlat() interface{} {
 	return res
 }
 
+func (g *Graph) GetVertexSecuence() []VertexSecuence {
+	vtxSecuence := make([]VertexSecuence, 0)
+	for _, v := range g.Vertices {
+		vtxSecuence = append(vtxSecuence, v.GetVertexSecuence())
+	}
+	return vtxSecuence
+}
+
+func (v *Vertex) GetVertexSecuence() VertexSecuence {
+	var dt, dv string
+	var err error
+	if v.Value != nil {
+		dt, dv, err = getTypeAndValueStringFromInterface(v.Value)
+	}
+	// TODO: return apierrors?
+	if err != nil {
+		panic(err)
+	}
+	vs := VertexSecuence{
+		Key:      v.Key,
+		DataInfo: DataInfo{DataType: dt, DataValue: dv},
+		Edges:    make([]int, 0),
+	}
+	for _, neighbor := range v.Vertices {
+		vs.Edges = append(vs.Edges, neighbor.Key)
+	}
+	return vs
+}
+
 // AddVertex creates a new Vertex and added to the Graph
 func (g *Graph) AddVertex(key int, val interface{}) {
 	v := NewVertex(key, val)
@@ -173,7 +191,6 @@ func (g *Graph) AddEdge(k1, k2 int) {
 
 // FUNCTIONS
 func FlatArray(input []interface{}) (FlatInfo, apierrors.RestErr) {
-	gs := NewGraphSecuence()
 	g := NewDirectedGraph()
 
 	var node int
@@ -186,23 +203,9 @@ func FlatArray(input []interface{}) (FlatInfo, apierrors.RestErr) {
 		}
 
 		var data interface{}
-
 		if _, ok := val.([]interface{}); !ok {
 			data = val
 		}
-		var dt, dv string
-		var parseErr error
-		if data != nil {
-			dt, dv, parseErr = getTypeAndValueStringFromInterface(data)
-			// TODO: return apierrors
-			if parseErr != nil {
-				panic(parseErr)
-			}
-		}
-
-		gs.VertexSecuence = append(gs.VertexSecuence,
-			VertexSecuence{node, DataInfo{DataType: dt, DataValue: dv}})
-		gs.EdgeSecuence = append(gs.EdgeSecuence, EdgeSecuence{father, node})
 
 		node++
 		g.AddVertex(node, data)
@@ -213,9 +216,9 @@ func FlatArray(input []interface{}) (FlatInfo, apierrors.RestErr) {
 	// start from zero node by default
 	buildGraphRecursive(input, 0, 0, cb)
 	return FlatInfo{
-		Graph:         g,
-		GraphSecuence: gs,
-		MaxDepth:      maxDepth,
+		Graph:          g,
+		VertexSecuence: g.GetVertexSecuence(),
+		MaxDepth:       maxDepth,
 	}, nil
 }
 
@@ -233,32 +236,33 @@ func buildGraphRecursive(data []interface{}, father int, depth int, cb func(int,
 	}
 }
 
-func getTypeAndValueStringFromInterface(val interface{}) (string, string, error) {
-	var dt, dv string
+func getTypeAndValueStringFromInterface(val interface{}) (dt string, dv string, err error) {
 	if val == nil {
-		return dt, dv, errors.New("cannot get type and value from nil interface")
+		err = errors.New("cannot get type and value from nil interface")
+		return
 	}
 	dt = fmt.Sprintf("%T", val)
 	dv = fmt.Sprintf("%v", val)
-
-	return dt, dv, nil
+	return
 }
 
-func BuildGraphFromSecuence(gs GraphSecuence) (*Graph, apierrors.RestErr) {
+func BuildGraphFromVertexSecuence(vertexSecuence []VertexSecuence) (*Graph, apierrors.RestErr) {
 	g := NewDirectedGraph()
 
 	// creating all the vertex's
-	for _, vtx := range gs.VertexSecuence {
-		parsedValue, err := vtx.DataInfo.toInterface()
+	for _, vs := range vertexSecuence {
+		parsedValue, err := vs.DataInfo.toInterface()
 		if err != nil {
 			return nil, apierrors.NewInternalServerError("error parsing data_info")
 		}
-		g.AddVertex(vtx.Key, parsedValue)
+		g.AddVertex(vs.Key, parsedValue)
 	}
 
 	// creating all the edge connections
-	for _, e := range gs.EdgeSecuence {
-		g.AddEdge(e.From, e.To)
+	for _, vs := range vertexSecuence {
+		for _, e := range vs.Edges {
+			g.AddEdge(vs.Key, e)
+		}
 	}
 
 	return g, nil
