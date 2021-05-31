@@ -53,7 +53,7 @@ func (s *gateway) GetFlats() ([]FlatInfoResponse, apierrors.RestErr) {
 		flatted := g.ToFlat()
 		fir := FlatInfoResponse{
 			ID:          f.ID,
-			DateCreated: f.DateCreated,
+			ProcessedAt: f.ProcessedAt,
 			Unflatted:   unflatted,
 			Flatted:     flatted,
 		}

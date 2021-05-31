@@ -16,7 +16,7 @@ type FlatResponse struct {
 
 type FlatInfoResponse struct {
 	ID          string        `json:"id"`
-	DateCreated time.Time     `json:"date_created"`
+	ProcessedAt time.Time     `json:"processed_at"`
 	Unflatted   []interface{} `json:"unflatted"`
 	Flatted     []interface{} `json:"flatted"`
 }
@@ -26,7 +26,7 @@ type FlatInfo struct {
 	Graph          *Graph           `bson:"-"`
 	VertexSecuence []VertexSecuence `bson:"vertex_secuence"`
 	MaxDepth       int              `bson:"max_depth"`
-	DateCreated    time.Time        `bson:"date_created"`
+	ProcessedAt    time.Time        `bson:"processed_at"`
 }
 
 // Graph
@@ -227,6 +227,7 @@ func FlatArray(input []interface{}) (FlatInfo, apierrors.RestErr) {
 		Graph:          g,
 		VertexSecuence: g.GetVertexSecuence(),
 		MaxDepth:       maxDepth,
+		ProcessedAt:    time.Now().UTC(),
 	}, nil
 }
 
