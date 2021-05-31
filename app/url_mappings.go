@@ -11,7 +11,7 @@ func routes(h handlers) *gin.Engine {
 
 	router.GET("/ping", ping.Ping)
 
-	router.POST("/flat", h.Flat.Post)
+	router.POST("/flats", h.Flat.Post)
 	router.GET("/flats", h.Flat.GetAll)
 
 	return router
