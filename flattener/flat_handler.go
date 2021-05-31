@@ -22,6 +22,8 @@ func NewHandler(flatGateway Gateway) Handler {
 	}
 }
 
+// Post will flat the request array
+// only is available to receive arrays of simple mixed values
 func (h *handler) Post(c *gin.Context) {
 	var unflatted []interface{}
 	if err := c.ShouldBindJSON(&unflatted); err != nil {
@@ -38,6 +40,8 @@ func (h *handler) Post(c *gin.Context) {
 	c.JSON(http.StatusOK, flatResponse)
 }
 
+// GetAll it will return a FlatInfo with a limit.
+// You can see the limit configured in config/config.go file
 func (h *handler) GetAll(c *gin.Context) {
 	flats, err := h.gtw.GetFlats()
 	if err != nil {
