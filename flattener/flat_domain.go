@@ -242,13 +242,17 @@ func FlatArray(input []interface{}) (FlatInfo, apierrors.RestErr) {
 
 	// this callback func  will create the nodes and added the connections
 	// to build the Graph. Also will track the max depth
-	cb := func(father int, depth int, val interface{}) (int, error) {
+	cb := func(father int, depth int, val interface{}) (int, apierrors.RestErr) {
 		if depth > maxDepth {
 			maxDepth = depth
 		}
 
 		var data interface{}
 		if _, ok := val.([]interface{}); !ok {
+			switch val.(type) {
+			case map[string]interface{}:
+				return 0, apierrors.NewBadRequestError("object is not a valid value inside an array")
+			}
 			data = val
 		}
 
@@ -259,7 +263,7 @@ func FlatArray(input []interface{}) (FlatInfo, apierrors.RestErr) {
 		node++
 		g.AddVertex(node, data)
 		if err := g.AddEdge(father, node); err != nil {
-			return 0, err
+			return 0, apierrors.NewInternalServerError(err.Error())
 		}
 
 		return node, nil
@@ -267,7 +271,7 @@ func FlatArray(input []interface{}) (FlatInfo, apierrors.RestErr) {
 
 	// start from zero node by default
 	if err := buildGraphRecursive(input, 0, 0, cb); err != nil {
-		return FlatInfo{}, apierrors.NewInternalServerError(err.Error())
+		return FlatInfo{}, err
 	}
 
 	return FlatInfo{
@@ -278,7 +282,7 @@ func FlatArray(input []interface{}) (FlatInfo, apierrors.RestErr) {
 	}, nil
 }
 
-func buildGraphRecursive(data []interface{}, father int, depth int, cb func(int, int, interface{}) (int, error)) error {
+func buildGraphRecursive(data []interface{}, father int, depth int, cb func(int, int, interface{}) (int, apierrors.RestErr)) apierrors.RestErr {
 	for _, v := range data {
 		var d int
 

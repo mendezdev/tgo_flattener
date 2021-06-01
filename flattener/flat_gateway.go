@@ -32,7 +32,7 @@ func (s *gateway) FlatResponse(input []interface{}) (FlatResponse, apierrors.Res
 
 	flatInfo, err := FlatArray(input)
 	if err != nil {
-		return fr, apierrors.NewInternalServerError("error flatting the array")
+		return fr, err
 	}
 
 	if dbErr := s.storage.create(flatInfo); dbErr != nil {

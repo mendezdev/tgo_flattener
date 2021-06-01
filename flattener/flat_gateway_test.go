@@ -2,6 +2,7 @@ package flattener
 
 import (
 	"encoding/json"
+	"net/http"
 	"testing"
 	"time"
 
@@ -51,6 +52,27 @@ func TestFlatResponse_OK(t *testing.T) {
 			assert.Equal(t, tc.Len, len(fr.Data))
 		})
 	}
+}
+
+func TestFlatResponseErrorByObjectInNode(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockStorage := NewMockStorage(mockCtrl)
+	gwt := NewGateway(mockStorage)
+
+	mockStorage.
+		EXPECT().
+		create(gomock.Any()).Return(nil).
+		Times(0)
+	input, err := buildArrayWithObject()
+	assert.Nil(t, err)
+	assert.NotNil(t, input)
+
+	_, apiErr := gwt.FlatResponse(input)
+	assert.NotNil(t, apiErr)
+	assert.Equal(t, http.StatusBadRequest, apiErr.Status())
+	assert.Equal(t, "object is not a valid value inside an array", apiErr.Message())
 }
 
 func TestFlatResponseDatabaseError(t *testing.T) {
@@ -184,6 +206,16 @@ func buildDepthLevel5() ([]interface{}, error) {
 // returns depth: 6, total_items: 14
 func buildDepthLevel6() ([]interface{}, error) {
 	b := []byte(`[[10,20,[["some",20,[30,2]]],[[20,[30,30.99,false,[100],2,[[101]]]]],[40]]]`)
+	return unmarshalDepth(b)
+}
+
+func buildArrayWithObject() ([]interface{}, error) {
+	b := []byte(`[
+		"test",
+		{
+			"key":"value"
+		}
+	]`)
 	return unmarshalDepth(b)
 }
 
