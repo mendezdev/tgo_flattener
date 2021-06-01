@@ -5,12 +5,12 @@ This is a simple server that receive a multilevel arrays and returns a flat arra
 
 ## Requirements
 - Clone this repo
-- This beta version use [MongoDB 4.2.3+](https://docs.mongodb.com/manual/administration/install-community/) for running local and for tests. You need to install it a run on default port :27017.
+- This beta version use [MongoDB 4.2.3+](https://docs.mongodb.com/manual/administration/install-community/) for running local and for tests. You need to install it a run on default port ```:27017```.
 - Install [go 1.16.3+](https://golang.org/doc/install).
 - **IMPORTANT**: if you don't have ```go mod``` enabled, see this [article](https://lets-go.alexedwards.net/sample/02.02-project-setup-and-enabling-modules.html)
 
 ## How to run the tests
-- Put MongoDB to run on port :27017
+- Put MongoDB to run on port ```:27017```
 - Open the terminal, go to the root folder of this app and execute ```go test ./...```
 
 ## How to run the app
