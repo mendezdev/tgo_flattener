@@ -219,6 +219,8 @@ func (di DataInfo) toInterface() (interface{}, error) {
 		convertedValue, err = strconv.ParseFloat(di.DataValue, 64)
 	case "bool":
 		convertedValue, err = strconv.ParseBool(di.DataValue)
+	case "": // in a v2, this should be improved by checking 'nil' or 'array' like an special data type and value
+		convertedValue = nil
 	default:
 		convertedValue = di.DataValue
 	}
