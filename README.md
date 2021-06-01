@@ -18,13 +18,13 @@ This is a simple server that receive a multilevel arrays and returns a flat arra
 - Open the terminal, go to the root folder of this app and execute ```go run main.go```. This will run on port ```:8080```
 
 ## ENDPOINTS
-- URL ```POST /flats```
-  - BODY: This will accept an array with nested arrays of simple values like `string`, `int`, `float` and even `null`
-  - RESPONSE: 
-    - 404: if you send an object value inside the array
-    - 500: this is work in progress and the algorithm should be improved
-    - 200: if all is OK you will get the flatted array and max depth of it
-      - body example: 
+- **URL** ```POST /flats```
+  - **INFO**: This will accept a JSON array with nested arrays of simple values like `string`, `int`, `float` and even `null`
+  - **RESPONSE**: 
+    - **404**: if you send an object value inside the array
+    - **500**: this is work in progress and the algorithm should be improved
+    - **200**: returns an JSON object with the flatted array and max depth of it
+      - **BODY EXAMPLE**: 
       ```
       [
         "0_lvl",
@@ -36,10 +36,33 @@ This is a simple server that receive a multilevel arrays and returns a flat arra
         3
       ]
       ```
-      - response example:
+      - **RESPONSE EXAMPLE**:
       ```
       {
         "max_depth": 1,
         "flatted_data": [3,"0_lvl","1_lvl",1,2]
       }
       ```
+- **URL** ```GET /flats```
+  - **RESPONSE**:
+    - **500**: this is work in progress and the algorithm should be improved
+    - **200**: returns a JSON array with the ID, the time from when this was processed, the flatted and unflatted array
+      - **RESPONSE EXAMPLE**:
+      ```
+      [
+        {
+          "id": "60b5a1727c09e9d6a3cefec4",
+          "processed_at": "2021-06-01T02:54:42.088Z",
+          "unflatted": [
+              2,
+              3,
+              "0_lvl",
+              [
+                  "1_lvl"
+              ],
+              1
+          ],
+          "flatted": ["0_lvl","1_lvl",1,2,3]
+        }
+      ]
+      ``` 
