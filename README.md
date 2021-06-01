@@ -46,7 +46,7 @@ This is a simple server that receive a multilevel arrays and returns a flat arra
 - **URL** ```GET /flats```
   - **RESPONSE**:
     - **500**: this is work in progress and the algorithm should be improved
-    - **200**: returns a JSON array with the ID, the time from when this was processed, the flatted and unflatted array
+    - **200**: returns a JSON array with the last 100 items processed with the ID, the time from when this was processed, the flatted and unflatted array
       - **RESPONSE EXAMPLE**:
       ```
       [
