@@ -1,0 +1,49 @@
+The first thing I did was read all the indications of the test and try to understand the problem to be solved.
+
+The next thing was to calculate approximately how much time I could dedicate to it outside of my working hours.
+I depended on this to see what I could spend more time on.
+
+First I prioritized trying to perform the algorithm.
+Once I figured out how to make a first version, I tried to figure out how to save it but I didn't have the best idea on how to do it yet.
+
+Something that I was clear about is the db was going to be a NoSQL database (like MongoDB). Why? Because it is the easiest to save for this type of data, easy to install and they were not complex queries.
+
+An important point is that I did not want to use a library to solve the max depth in the array and flatten it as requested by the challenge but I was going to do it to serialize and deserialize the requests and responses.
+I did this to only focus on the algorithm, how to save it, build an re-build the arrays
+
+I made a first version in which it worked quite well at flattening the arrays and saved the information correctly.
+The problem with this version was that it could not correctly re-build the original array.
+As I said before, I didn't want to save the direct array string in the db so as not to use the deserializer.
+
+Given this situation, I tried to find a data structure that would allow me to have the information to reassemble it.
+With this I came to think of a kind of graph with which I could tell who was connected to whom and what value and type of data that node had.
+
+I came to the conclusion of putting together a kind of graph that could tell who was connected to whom and what value and type of data that node had.
+
+In this way I got to the second version (or maybe third, I don't remember it well: D) with which I could re-build it.
+
+At this point I had done some small tests but it was time to test the strongest points of the algorithm.
+
+After this, I got into the GET of the already flattened arrays and their tests. Once I applied the graph structure this came out pretty fast.
+
+The next thing was to finalize some details of data validations but I did not want to get too involved in it because I knew that it could be improved in a next version.
+
+The last thing was to write the instructions on how to run this application.
+
+The design decisions I have made have been based on what I have done lately and I have more fresh in my mind.
+In the last two years I have been learning new technologies constantly. I had been working for 4 years in C# and this challenge appeared to enter Mercadolibre and work with Java, Kotlin, Grails and currently Go.
+So lately I have a lot of new information and I am trying to consolidate it day by day.
+
+I tried to make a DDD focused Hex structure using Go.
+I have been working hard with golang for almost a year and we have been creating an API from scratch with this type of structure and it has helped us a lot to incorporate new functionalities.
+The previous API was more "package oriented", it was all mixed up and it was very difficult to test in a unitary way since we could not implement dependency inversion and use dependency injection.
+
+For my part, I have a lot to learn from this type of architecture but from what we are implementing, it seems super scalable and clear to me.
+
+Last but not least, you will surely find code to improve.
+Possibly better error handling, improved performance and better testing.
+I am delighted to hear your suggestions for improvements.
+
+Thank you for this opportunity! I really enjoyed it a lot! It was fun!
+
+Greetings.
